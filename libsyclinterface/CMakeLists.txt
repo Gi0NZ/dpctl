@@ -42,6 +42,21 @@ option(DPCTL_ENABLE_GLOG
     OFF
 )
 
+
+# Optional experimental SYnergy submit backend.
+# When enabled, libDPCTLSyclInterface exposes additional native submit
+# functions that call synergy::queue::submit(...). The standard dpctl submit
+# path remains unchanged.
+option(DPCTL_ENABLE_SYNERGY
+    "Enable experimental SYnergy native submit backend"
+    OFF
+)
+
+set(DPCTL_SYNERGY_ROOT
+    ""
+    CACHE PATH
+    "Path to the SYnergy project root"
+)
 set(DPCTL_LEVEL_ZERO_INCLUDE_DIR "" CACHE STRING "Level zero header path")
 
 set(LIBZE_SET_LOADER_FILENAME "" CACHE STRING "User-provided Level Zero Loader filename")
@@ -280,6 +295,49 @@ target_include_directories(DPCTLSyclInterface
     ${CMAKE_CURRENT_SOURCE_DIR}/helper/include/
     ${SYCL_INCLUDE_DIR}
 )
+
+
+if(DPCTL_ENABLE_SYNERGY)
+    if(NOT DPCTL_SYNERGY_ROOT)
+        message(FATAL_ERROR
+            "DPCTL_ENABLE_SYNERGY=ON requires "
+            "DPCTL_SYNERGY_ROOT=/path/to/SYnergy"
+        )
+    endif()
+
+    if(NOT EXISTS "${DPCTL_SYNERGY_ROOT}/include/synergy.hpp")
+        message(FATAL_ERROR
+            "DPCTL_SYNERGY_ROOT does not look like a valid SYnergy root: "
+            "${DPCTL_SYNERGY_ROOT}"
+        )
+    endif()
+
+    message(STATUS "Building DPCTLSyclInterface with SYnergy backend")
+    message(STATUS "SYnergy root: ${DPCTL_SYNERGY_ROOT}")
+
+    find_package(CUDAToolkit REQUIRED)
+
+    target_include_directories(DPCTLSyclInterface
+        PRIVATE
+        ${DPCTL_SYNERGY_ROOT}/include
+        ${DPCTL_SYNERGY_ROOT}/include/profiling
+        ${DPCTL_SYNERGY_ROOT}/binding
+    )
+
+    target_compile_definitions(DPCTLSyclInterface
+        PRIVATE
+        DPCTL_ENABLE_SYNERGY
+        SYNERGY_CUDA_SUPPORT
+        SYNERGY_DEVICE_PROFILING
+        SYNERGY_KERNEL_PROFILING
+        SYNERGY_USE_PROFILING_ENERGY
+    )
+
+    target_link_libraries(DPCTLSyclInterface
+        PRIVATE
+        CUDA::nvml
+    )
+endif()
 
 if(DPCTL_ENABLE_GLOG)
     find_package(glog REQUIRED)
