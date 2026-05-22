@@ -1,3 +1,4 @@
 [submodule "SYnergy"]
 	path = SYnergy
-	url = https://github.com/unisa-hpc/SYnergy.git
+	url = https://github.com/Gi0NZ/SYnergy.git
+	branch = main

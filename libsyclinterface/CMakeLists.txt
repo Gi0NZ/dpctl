@@ -53,9 +53,9 @@ option(DPCTL_ENABLE_SYNERGY
 )
 
 set(DPCTL_SYNERGY_ROOT
-    ""
+    "${CMAKE_SOURCE_DIR}/SYnergy"
     CACHE PATH
-    "Path to the SYnergy project root"
+    "Path to the SYnergy submodule root"
 )
 set(DPCTL_LEVEL_ZERO_INCLUDE_DIR "" CACHE STRING "Level zero header path")
 
