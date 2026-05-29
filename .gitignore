@@ -104,3 +104,4 @@ dpctl/resources/cmake
 
 # asv artifacts
 *.asv*
+.venv/
